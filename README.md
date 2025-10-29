@@ -25,7 +25,7 @@ on the Qiskit software development kit.
 > A description of the original library structure, features, and domain-specific applications, can be found 
 > in a dedicated [ArXiv paper](https://arxiv.org/abs/2505.17756).
 
-The QNRI Machine Learning framework aims to be:
+The Qiskit Machine Learning framework aims to be:
 
 * **User-friendly**, allowing users to quickly and easily prototype quantum machine learning models without 
     the need of extensive quantum computing knowledge.
@@ -35,7 +35,7 @@ The QNRI Machine Learning framework aims to be:
     architectures, patterns and related services.
 
 
-## What are the main features of QNRI Machine Learning?
+## What are the main features of Qiskit Machine Learning?
 
 ### Kernel-based methods
 
@@ -45,13 +45,13 @@ or a Quantum Support Vector Regressor (QSVR) to solve classification or regressi
 
 ### Quantum Neural Networks (QNNs)
 
-QNRI Machine Learning defines a generic interface for neural networks, implemented by two core (derived) primitives:
+Qiskit Machine Learning defines a generic interface for neural networks, implemented by two core (derived) primitives:
 
 - EstimatorQNN, combining parametrized quantum circuits with Z-pauli quantum observables. The output is the expected value of the Z observable.
   
 - SamplerQNN, translating bit-string counts into the desired outputs.
 
-To train and use neural networks, QNRI Machine Learning provides learning algorithms such as the NeuralNetworkClassifier and NeuralNetworkRegressor.
+To train and use neural networks, Qiskit Machine Learning provides learning algorithms such as the NeuralNetworkClassifier and NeuralNetworkRegressor.
 Finally, built on these, the Variational Quantum Classifier (VQC) and the Variational Quantum Regressor (VQR),
 take a _feature map_ and an _ansatz_ to construct the underlying QNN automatically using high-level syntax.
 
