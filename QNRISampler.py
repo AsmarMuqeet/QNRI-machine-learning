@@ -16,6 +16,8 @@ from qiskit.primitives.primitive_job import PrimitiveJob
 from qiskit import generate_preset_pass_manager
 
 from qiskit_aer import AerSimulator
+from qaas import QBackend, QProvider
+from py4lexis.session import LexisSession
 
 class fackec:
     def __init__(self,counts):
@@ -44,8 +46,6 @@ class Options:
 
 class Aer_Sampler(BaseSamplerV2):
     """
-    Aer implementation of SamplerV2 class.
-
     Each tuple of ``(circuit, <optional> parameter values, <optional> shots)``, called a sampler
     primitive unified bloc (PUB), produces its own array-valued result. The :meth:`~run` method can
     be given many pubs at once.
@@ -213,3 +213,90 @@ def _convert_parameter_bindings(pub: SamplerPub) -> dict:
     param_array = parameter_values.as_array(circuit.parameters)
     parameter_binds = {p: param_array[..., i].ravel() for i, p in enumerate(circuit.parameters)}
     return parameter_binds
+
+
+class VLQ_Sampler(BaseSamplerV2):
+    """
+    Each tuple of ``(circuit, <optional> parameter values, <optional> shots)``, called a sampler
+    primitive unified bloc (PUB), produces its own array-valued result. The :meth:`~run` method can
+    be given many pubs at once.
+
+    * ``backend_options``: Options passed to AerSimulator.
+      Default: {}.
+
+    * ``run_options``: Options passed to :meth:`AerSimulator.run`.
+      Default: {}.
+
+    """
+
+    def __init__(
+        self,
+        *,
+        lexis_project: str = "vlq_demo_project",
+        resource_name: str = "qaas_user",
+        shots: int | None = 10000,
+    ):
+
+        self.session = LexisSession()
+        self.lexis_project = lexis_project
+        self.resource_name = resource_name
+        self.token = self.session.get_access_token()
+        self.provider = QProvider(self.token, self.lexis_project, self.resource_name)
+        self.shots = shots
+        self._backend:QBackend = self.provider.get_backend()
+
+
+    def run(
+        self, pubs: Iterable[SamplerPubLike], *, shots: int | None = None
+    ) -> PrimitiveJob[PrimitiveResult[SamplerPubResult]]:
+        if shots is None:
+            shots = self.shots
+        coerced_pubs = [SamplerPub.coerce(pub, shots) for pub in pubs]
+        self._validate_pubs(coerced_pubs)
+        job = PrimitiveJob(self._run, coerced_pubs)
+        job._submit()
+        return job
+
+    def _validate_pubs(self, pubs: list[SamplerPub]):
+        for i, pub in enumerate(pubs):
+            if len(pub.circuit.cregs) == 0:
+                warnings.warn(
+                    f"The {i}-th pub's circuit has no output classical registers and so the result "
+                    "will be empty. Did you mean to add measurement instructions?",
+                    UserWarning,
+                )
+
+    def _run(self, pubs: list[SamplerPub]) -> PrimitiveResult[SamplerPubResult]:
+        pub_dict = defaultdict(list)
+        # consolidate pubs with the same number of shots
+        for i, pub in enumerate(pubs):
+            pub_dict[pub.shots].append(i)
+
+        results = [None] * len(pubs)
+        for shots, lst in pub_dict.items():
+            # run pubs with the same number of shots at once
+            pub_results = self._run_pubs([pubs[i] for i in lst], shots)
+            # reconstruct the result of pubs
+            for i, pub_result in zip(lst, pub_results):
+                results[i] = pub_result
+        return PrimitiveResult(results, metadata={"version": 2})
+
+
+    def _run_pubs(self, pubs: list[SamplerPub], shots: int) -> list[SamplerPubResult]:
+        """Compute results for pubs that all require the same value of ``shots``."""
+        # Bind params onto each circuit up-front so the circuits are backend-agnostic.
+        circuits = [
+            _assign_parameters_to_circuit(pub.circuit, pub.parameter_values)
+            for pub in pubs
+        ]
+
+        results = []
+
+        for circuit in circuits:
+            transpiled_qc = self._backend.transpile_to_IQM(circuit)
+            counts = self.backend.run(transpiled_qc,
+                                shots=self.shots).result().get_counts()
+            results.append(customResult(counts))
+        
+        return results
+
