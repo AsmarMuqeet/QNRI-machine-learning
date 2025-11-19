@@ -54,7 +54,7 @@ def callback_graph(weights, obj_func_eval):
     #plt.show()
 
 from qiskit_aer.primitives import SamplerV2
-from AerSampler import Aer_Sampler
+from QNRISampler import Aer_Sampler
 
 if __name__ == "__main__":
 
