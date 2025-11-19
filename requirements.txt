@@ -9,3 +9,11 @@ dill>=0.3.4
 requests==2.32.3
 matplotlib,
 IPython
+certifi==2024.8.30,
+cffi==1.17.1,
+click==8.1.7,
+six==1.16.0,
+typer==0.13.1,
+typing_extensions==4.12.2,
+urllib3==2.2.3,
+pydantic<2.10,>=2.5.0
