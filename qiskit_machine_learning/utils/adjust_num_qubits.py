@@ -16,7 +16,10 @@ from typing import Tuple
 
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import RealAmplitudes, ZFeatureMap, ZZFeatureMap
-from qiskit.circuit.library import real_amplitudes, z_feature_map, zz_feature_map
+#from qiskit.circuit.library import real_amplitudes, z_feature_map, zz_feature_map 
+from qiskit.circuit.library import RealAmplitudes as real_amplitudes
+from qiskit.circuit.library import ZFeatureMap as z_feature_map
+from qiskit.circuit.library import ZZFeatureMap as zz_feature_map
 
 from ..exceptions import QiskitMachineLearningError
 from ..utils.deprecation import issue_deprecation_msg
