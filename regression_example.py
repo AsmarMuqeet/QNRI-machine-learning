@@ -53,7 +53,7 @@ def callback_graph(weights, obj_func_eval):
     #plt.show()
 
 from qiskit_aer.primitives import EstimatorV2
-from AerEstimator import Aer_Estimator
+from QNRIEstimator import Aer_Estimator
 
 backend_options = {
         "method": "statevector",
